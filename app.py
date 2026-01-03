@@ -12,86 +12,93 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- MODERN GEOFURKAN TEMASI (CSS) ---
-# Bu kısım, istediğin siyah izohips arka planı ve modern arayüzü sağlayan sihirli koddur.
+# --- TASARIM KODLARI (CSS) ---
 st.markdown("""
 <style>
-/* 1. ANA ARKA PLAN: Siyah zemin üzerine gri izohips deseni */
+/* 1. ARKA PLAN: Senin seçtiğin harita resmi */
 .stApp {
-    background-color: #000000; /* Zifiri siyah zemin */
-    /* Aşağıdaki uzun kod, izohips desenini oluşturan gömülü SVG resmidir */
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600' viewBox='0 0 600 600'%3E%3Cg fill='none' stroke='%23333333' stroke-width='1.2'%3E%3Cpath d='M0 600V0h600v600H0z' stroke='none'/%3E%3Cpath d='M0 0h600v600H0z' opacity='.5'/%3E%3Cpath d='M0 200q50 50 100-50t100-50 100 50 100 50 100-50 100-50V0H0v200zm0 200q50 50 100-50t100-50 100 50 100 50 100-50 100-50V200H0v200zm0 200q50 50 100-50t100-50 100 50 100 50 100-50 100-50V400H0v200z'/%3E%3Cpath d='M300 0q50 50 100 0t100 0 100 0V0h-300zm0 200q50 50 100 0t100 0 100 0V0h-300zm0 200q50 50 100 0t100 0 100 0V200h-300zm0 200q50 50 100 0t100 0 100 0V400h-300z'/%3E%3Cpath d='M0 100q50-50 100 50t100 50 100-50 100-50 100 50 100 50V0H0v100zm0 200q50-50 100 50t100 50 100-50 100-50 100 50 100 50V200H0v200zm0 200q50-50 100 50t100 50 100-50 100-50 100 50 100 50V400H0v200z'/%3E%3Cpath d='M300 100q50-50 100 0t100 0 100 0V0h-300zm0 200q50-50 100 0t100 0 100 0V0h-300zm0 200q50-50 100 0t100 0 100 0V200h-300zm0 200q50-50 100 0t100 0 100 0V400h-300z'/%3E%3C/g%3E%3C/svg%3E");
+    background-image: url("background.jpg"); 
+    background-size: cover; /* Resmi ekrana yay */
+    background-position: center;
     background-attachment: fixed;
-    background-size: 600px; /* Desenin sıklığı */
 }
 
-/* 2. METİN RENKLERİ: Koyu zemin üzerinde okunması için açık renkler */
-h1, h2, h3, h4, h5, h6, p, label, span, div, .stMarkdown, .caption {
-    color: #E0E0E0 !important; /* Açık gri/beyaz yazı rengi */
+/* 2. YAZI RENKLERİ: Harita açık renk olduğu için yazılar KOYU olmalı */
+h1, h2, h3, h4, h5, h6, .stMarkdown, p, li, label, .caption {
+    color: #222222 !important; /* Koyu antrasit gri */
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 h1 {
-    text-shadow: 2px 2px 4px #000000; /* Başlıklara gölge efekti */
+    font-weight: 800; /* Başlıklar daha kalın */
+    letter-spacing: -1px;
 }
 
-/* 3. KUTULAR VE FORMLAR: Yarı saydam, modern cam efekti */
+/* 3. KUTULAR: Okunabilirlik için hafif beyazımsı cam efekti */
 [data-testid="stExpander"], [data-testid="stForm"], .stAlert {
-    background-color: rgba(30, 30, 30, 0.85) !important; /* Yarı saydam koyu gri */
-    border: 1px solid #444 !important;
-    border-radius: 15px !important;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.5); /* Derinlik gölgesi */
+    background-color: rgba(255, 255, 255, 0.85) !important; /* Yarı saydam beyaz */
+    border: 1px solid #ccc !important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1); /* Hafif gölge */
 }
 
-/* 4. BUTONLAR: Modern, yuvarlak ve renkli */
+/* 4. MENÜ (SIDEBAR): Emojisiz, sade ve modern */
+[data-testid="stSidebar"] {
+    background-color: #f8f9fa !important; /* Çok açık gri, temiz görünüm */
+    border-right: 1px solid #ddd;
+}
+/* Menüdeki radyo butonlarını özelleştirme */
+.stRadio > div {
+    background-color: transparent;
+}
+.stRadio label {
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    padding: 10px;
+    border-radius: 8px;
+    transition: background-color 0.3s;
+}
+.stRadio label:hover {
+    background-color: #e9ecef; /* Üzerine gelince hafif gri */
+}
+
+/* 5. BUTONLAR: GeoFurkan Siyah/Beyaz tarzı veya koyu mavi */
 .stButton>button {
-    background: linear-gradient(45deg, #00ADB5, #008C9E) !important; /* Turkuaz degrade */
+    background-color: #222222 !important; /* Siyah buton */
     color: white !important;
     border: none !important;
-    border-radius: 25px !important; /* Daha yuvarlak köşeler */
-    padding: 10px 24px !important;
+    border-radius: 8px !important;
+    padding: 12px 24px !important;
     font-weight: bold !important;
     transition: all 0.3s ease;
-    text-transform: uppercase;
-    letter-spacing: 1px;
 }
 .stButton>button:hover {
-     transform: translateY(-2px); /* Üzerine gelince hafif yukarı kalkar */
-     box-shadow: 0 6px 20px rgba(0, 173, 181, 0.6); /* Parlama efekti */
+    background-color: #444444 !important; /* Üzerine gelince koyu gri */
+    transform: translateY(-2px);
 }
 
-/* 5. KENAR ÇUBUĞU (SIDEBAR) */
-[data-testid="stSidebar"] {
-    background-color: rgba(20, 20, 20, 0.95) !important; /* Çok koyu gri */
-    border-right: 1px solid #333;
-}
-
-/* 6. GİRİŞ KUTULARI VE SEÇİMLER */
+/* 6. GİRİŞ KUTULARI */
 .stTextInput>div>div>input, .stSelectbox>div>div>div {
-    background-color: #2C2C2C !important;
-    color: white !important;
-    border-radius: 10px !important;
-    border: 1px solid #555 !important;
+    background-color: #ffffff !important;
+    color: #333 !important;
+    border: 1px solid #bbb !important;
 }
 
-/* 7. FOOTER */
+/* Footer */
 .footer {
     position: fixed; left: 0; bottom: 0; width: 100%;
-    background-color: rgba(20, 20, 20, 0.95);
-    color: #888;
+    background-color: rgba(255, 255, 255, 0.9);
+    color: #555;
     text-align: center; padding: 10px;
-    border-top: 1px solid #333; z-index: 100;
+    border-top: 1px solid #ccc; z-index: 100; font-size: 12px;
 }
-.block-container {padding-top: 2rem; padding-bottom: 5rem;}
 </style>
 """, unsafe_allow_html=True)
 
-# --- GİZLİ API KEY KONTROLÜ ---
+# --- GİZLİ API KEY ---
 if "GOOGLE_API_KEY" in st.secrets:
     api_key = st.secrets["GOOGLE_API_KEY"]
 else:
-    # Yerelde çalışırken hata vermemesi için geçici bir çözüm,
-    # ama deploy ettiğinde secrets çalışacak.
     api_key = None 
-    # st.error("API Key Secrets içinde bulunamadı.") # Görüntü kirliliği olmasın diye kapattım
 
 # --- FONKSİYONLAR ---
 def pdf_oku(pdf_file):
@@ -127,36 +134,38 @@ def sorulari_uret_otomatik(text, api_key):
     except: pass
     return []
 
-# --- ARAYÜZ BAŞLIYOR ---
+# --- ARAYÜZ ---
 
 # Header
 col_logo, col_title = st.columns([1, 4])
 with col_logo:
-    try: st.image("logo.png", width=110)
-    except: st.markdown("# 📚")
+    try: st.image("logo.png", width=120)
+    except: st.markdown("### 🏔️")
 with col_title:
     st.title("QuizApp")
     st.caption("GeoFurkan Eğitim Platformu")
+
 st.divider()
 
-# --- MENÜ ---
-st.sidebar.title("📌 Menü")
-secim = st.sidebar.radio("Seçim Yapınız:", ["📄 PDF ile Soru Üret", "📚 Hazır Soru Kütüphanesi"])
+# --- MENÜ (Sadeleştirildi) ---
+st.sidebar.title("NAVİGASYON")
+# Emojiler kaldırıldı, sade metin kullanıldı
+secim = st.sidebar.radio("Bölüm Seçiniz:", ["PDF Soru Modülü", "Soru Kütüphanesi"])
 
 # --- MOD 1: PDF ---
-if secim == "📄 PDF ile Soru Üret":
-    st.subheader("Yapay Zeka Soru Üretici")
-    st.info("Ders notunu (PDF) yükle, yapay zeka senin için test hazırlasın.")
+if secim == "PDF Soru Modülü":
+    st.subheader("PDF Soru Üretici")
     
-    uploaded_file = st.file_uploader("Dosyayı buraya sürükle", type="pdf")
+    # Kutu tasarımını CSS ile güzelleştirdik
+    uploaded_file = st.file_uploader("Ders notunu yükle (PDF)", type="pdf")
     
     if 'pdf_sorular' not in st.session_state: st.session_state['pdf_sorular'] = None
 
-    if uploaded_file and st.button("Soruları Oluştur 🚀", type="primary"):
+    if uploaded_file and st.button("Analiz Et ve Soru Üret", type="primary"):
         if not api_key:
-             st.error("Sistem Hatası: API Anahtarı (Secrets) bulunamadı.")
+             st.error("Sistem Hatası: API Anahtarı bulunamadı.")
         else:
-            with st.spinner("Yapay zeka soruları hazırlıyor..."):
+            with st.spinner("Harita taranıyor, sorular çıkarılıyor..."):
                 text = pdf_oku(uploaded_file)
                 st.session_state['pdf_sorular'] = sorulari_uret_otomatik(text, api_key)
                 st.rerun()
@@ -166,43 +175,42 @@ if secim == "📄 PDF ile Soru Üret":
             cevaplar = {}
             for i, q in enumerate(st.session_state['pdf_sorular']):
                 st.markdown(f"**{i+1}. {q['soru']}**")
-                cevaplar[i] = st.radio("Cevap:", q['secenekler'], key=f"p_{i}", label_visibility="collapsed")
+                cevaplar[i] = st.radio("Seçiminiz:", q['secenekler'], key=f"p_{i}", label_visibility="collapsed")
                 st.write("---")
             
-            if st.form_submit_button("Testi Bitir"):
+            if st.form_submit_button("Testi Tamamla"):
                 dogru = 0
-                st.write("### 📊 Sonuçlar")
+                st.write("### Sonuç Analizi")
                 for i, q in enumerate(st.session_state['pdf_sorular']):
                     if cevaplar.get(i) == q['dogru_cevap']:
                         dogru += 1
                         st.success(f"**{i+1}.** Doğru ✅")
                     else:
                         st.error(f"**{i+1}.** Yanlış ❌ (Doğru: {q['dogru_cevap']})")
-                st.metric("Puan", int(dogru/len(st.session_state['pdf_sorular'])*100))
+                st.metric("Başarı Puanı", int(dogru/len(st.session_state['pdf_sorular'])*100))
 
 # --- MOD 2: Kütüphane ---
-elif secim == "📚 Hazır Soru Kütüphanesi":
-    st.subheader("Konu Tarama Testleri")
+elif secim == "Soru Kütüphanesi":
+    st.subheader("Hazır Testler")
     try:
         dersler = list(soru_bankasi.kutuphane.keys())
-        secilen_ders = st.selectbox("Ders Seç:", dersler)
+        secilen_ders = st.selectbox("Ders", dersler)
         konular = list(soru_bankasi.kutuphane[secilen_ders].keys())
-        secilen_konu = st.selectbox("Konu Seç:", konular)
+        secilen_konu = st.selectbox("Konu", konular)
         sorular = soru_bankasi.kutuphane[secilen_ders][secilen_konu]
         
-        st.write(f"📝 **{secilen_konu}** testi başlıyor! ({len(sorular)} Soru)")
-        st.divider()
+        st.info(f"📍 **{secilen_konu}** testi seçildi. Toplam {len(sorular)} soru.")
         
         with st.form("lib_test"):
             lib_cevaplar = {}
             for i, q in enumerate(sorular):
                 st.markdown(f"**{i+1}. {q['soru']}**")
-                lib_cevaplar[i] = st.radio("Cevap:", q['secenekler'], key=f"l_{i}", label_visibility="collapsed")
+                lib_cevaplar[i] = st.radio("Seçiminiz:", q['secenekler'], key=f"l_{i}", label_visibility="collapsed")
                 st.write("")
             
-            if st.form_submit_button("Testi Bitir"):
+            if st.form_submit_button("Testi Tamamla"):
                 dogru = 0
-                st.write("### 📊 Sonuçlar")
+                st.write("### Sonuç Analizi")
                 for i, q in enumerate(sorular):
                     if lib_cevaplar.get(i) == q['dogru_cevap']:
                         dogru += 1
@@ -211,12 +219,11 @@ elif secim == "📚 Hazır Soru Kütüphanesi":
                         st.error(f"**{i+1}.** Yanlış ❌ (Doğru: {q['dogru_cevap']})")
                 
                 skor = int(dogru/len(sorular)*100)
-                st.metric("Toplam Puan", skor)
+                st.metric("Başarı Puanı", skor)
                 if skor >= 70: st.balloons()
                 
     except Exception as e:
-        st.warning("Henüz soru kütüphanesi oluşturulmamış.")
-        # st.write(e)
+        st.warning("Kütüphane verisi yüklenemedi.")
 
 # Footer
-st.markdown('<div class="footer">Made with ❤️ by <b>GeoFurkan</b></div>', unsafe_allow_html=True)
+st.markdown('<div class="footer">GeoFurkan © 2024 | QuizApp v3.0</div>', unsafe_allow_html=True)
