@@ -207,4 +207,5 @@ elif secim == "Soru Kütüphanesi":
         st.warning("Veritabanı bağlantısı kurulamadı.")
 
 # Footer
-st.markdown('<div class="footer">GeoFurkan © 2024</div>', unsafe_allow_html=True)
+st.markdown('<div class="footer">GeoFurkan © 2026</div>', unsafe_allow_html=True)
+
