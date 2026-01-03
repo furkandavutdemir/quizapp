@@ -2,195 +2,221 @@ import streamlit as st
 import PyPDF2
 import requests
 import json
+import soru_bankasi
 
-# --- SAYFA AYARLARI VE STİL ---
+# --- SAYFA AYARLARI ---
 st.set_page_config(
     page_title="QuizApp by GeoFurkan",
-    page_icon="logo.png", # Tarayıcı sekmesinde de logo görünür
+    page_icon="logo.png",
     layout="centered",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="expanded"
 )
 
-# Özel CSS ile Alt Bilgi (Footer) Tasarımı
+# --- MODERN GEOFURKAN TEMASI (CSS) ---
+# Bu kısım, istediğin siyah izohips arka planı ve modern arayüzü sağlayan sihirli koddur.
 st.markdown("""
 <style>
-.footer {
-    position: fixed;
-    left: 0;
-    bottom: 0;
-    width: 100%;
-    background-color: #f0f2f6;
-    color: #555;
-    text-align: center;
-    padding: 10px;
-    font-size: 14px;
-    border-top: 1px solid #e0e0e0;
-    z-index: 100;
+/* 1. ANA ARKA PLAN: Siyah zemin üzerine gri izohips deseni */
+.stApp {
+    background-color: #000000; /* Zifiri siyah zemin */
+    /* Aşağıdaki uzun kod, izohips desenini oluşturan gömülü SVG resmidir */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600' viewBox='0 0 600 600'%3E%3Cg fill='none' stroke='%23333333' stroke-width='1.2'%3E%3Cpath d='M0 600V0h600v600H0z' stroke='none'/%3E%3Cpath d='M0 0h600v600H0z' opacity='.5'/%3E%3Cpath d='M0 200q50 50 100-50t100-50 100 50 100 50 100-50 100-50V0H0v200zm0 200q50 50 100-50t100-50 100 50 100 50 100-50 100-50V200H0v200zm0 200q50 50 100-50t100-50 100 50 100 50 100-50 100-50V400H0v200z'/%3E%3Cpath d='M300 0q50 50 100 0t100 0 100 0V0h-300zm0 200q50 50 100 0t100 0 100 0V0h-300zm0 200q50 50 100 0t100 0 100 0V200h-300zm0 200q50 50 100 0t100 0 100 0V400h-300z'/%3E%3Cpath d='M0 100q50-50 100 50t100 50 100-50 100-50 100 50 100 50V0H0v100zm0 200q50-50 100 50t100 50 100-50 100-50 100 50 100 50V200H0v200zm0 200q50-50 100 50t100 50 100-50 100-50 100 50 100 50V400H0v200z'/%3E%3Cpath d='M300 100q50-50 100 0t100 0 100 0V0h-300zm0 200q50-50 100 0t100 0 100 0V0h-300zm0 200q50-50 100 0t100 0 100 0V200h-300zm0 200q50-50 100 0t100 0 100 0V400h-300z'/%3E%3C/g%3E%3C/svg%3E");
+    background-attachment: fixed;
+    background-size: 600px; /* Desenin sıklığı */
 }
+
+/* 2. METİN RENKLERİ: Koyu zemin üzerinde okunması için açık renkler */
+h1, h2, h3, h4, h5, h6, p, label, span, div, .stMarkdown, .caption {
+    color: #E0E0E0 !important; /* Açık gri/beyaz yazı rengi */
+}
+h1 {
+    text-shadow: 2px 2px 4px #000000; /* Başlıklara gölge efekti */
+}
+
+/* 3. KUTULAR VE FORMLAR: Yarı saydam, modern cam efekti */
+[data-testid="stExpander"], [data-testid="stForm"], .stAlert {
+    background-color: rgba(30, 30, 30, 0.85) !important; /* Yarı saydam koyu gri */
+    border: 1px solid #444 !important;
+    border-radius: 15px !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5); /* Derinlik gölgesi */
+}
+
+/* 4. BUTONLAR: Modern, yuvarlak ve renkli */
 .stButton>button {
-    width: 100%;
-    border-radius: 10px;
+    background: linear-gradient(45deg, #00ADB5, #008C9E) !important; /* Turkuaz degrade */
+    color: white !important;
+    border: none !important;
+    border-radius: 25px !important; /* Daha yuvarlak köşeler */
+    padding: 10px 24px !important;
+    font-weight: bold !important;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
+.stButton>button:hover {
+     transform: translateY(-2px); /* Üzerine gelince hafif yukarı kalkar */
+     box-shadow: 0 6px 20px rgba(0, 173, 181, 0.6); /* Parlama efekti */
+}
+
+/* 5. KENAR ÇUBUĞU (SIDEBAR) */
+[data-testid="stSidebar"] {
+    background-color: rgba(20, 20, 20, 0.95) !important; /* Çok koyu gri */
+    border-right: 1px solid #333;
+}
+
+/* 6. GİRİŞ KUTULARI VE SEÇİMLER */
+.stTextInput>div>div>input, .stSelectbox>div>div>div {
+    background-color: #2C2C2C !important;
+    color: white !important;
+    border-radius: 10px !important;
+    border: 1px solid #555 !important;
+}
+
+/* 7. FOOTER */
+.footer {
+    position: fixed; left: 0; bottom: 0; width: 100%;
+    background-color: rgba(20, 20, 20, 0.95);
+    color: #888;
+    text-align: center; padding: 10px;
+    border-top: 1px solid #333; z-index: 100;
+}
+.block-container {padding-top: 2rem; padding-bottom: 5rem;}
 </style>
 """, unsafe_allow_html=True)
 
-# --- FONKSİYONLAR ---
+# --- GİZLİ API KEY KONTROLÜ ---
+if "GOOGLE_API_KEY" in st.secrets:
+    api_key = st.secrets["GOOGLE_API_KEY"]
+else:
+    # Yerelde çalışırken hata vermemesi için geçici bir çözüm,
+    # ama deploy ettiğinde secrets çalışacak.
+    api_key = None 
+    # st.error("API Key Secrets içinde bulunamadı.") # Görüntü kirliliği olmasın diye kapattım
 
+# --- FONKSİYONLAR ---
 def pdf_oku(pdf_file):
     reader = PyPDF2.PdfReader(pdf_file)
     text = ""
-    for page in reader.pages:
-        text += page.extract_text()
+    for page in reader.pages: text += page.extract_text()
     return text
 
 def temizle_json(metin):
-    metin = metin.replace("```json", "").replace("```", "").strip()
-    return metin
-
-def en_uygun_modeli_bul(api_key):
-    url = f"https://generativelanguage.googleapis.com/v1beta/models?key={api_key}"
-    try:
-        response = requests.get(url, timeout=10)
-        if response.status_code == 200:
-            modeller = response.json().get('models', [])
-            uygunlar = [m['name'] for m in modeller if 'generateContent' in m.get('supportedGenerationMethods', [])]
-            if not uygunlar: return None
-            secilen = next((m for m in uygunlar if 'flash' in m), 
-                           next((m for m in uygunlar if 'pro' in m), uygunlar[0]))
-            return secilen.replace("models/", "")
-        return None
-    except:
-        return None
+    return metin.replace("```json", "").replace("```", "").strip()
 
 def sorulari_uret_otomatik(text, api_key):
-    model_adi = en_uygun_modeli_bul(api_key)
-    if not model_adi:
-        st.error("🚨 Uygun bir AI modeli bulunamadı. API Key'i kontrol et.")
-        return []
-    
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_adi}:generateContent?key={api_key}"
-    headers = {'Content-Type': 'application/json'}
-    
-    prompt = f"""
-    Sen uzman bir sınav hazırlayıcısın. Aşağıdaki metni analiz et ve tam 5 adet kaliteli çoktan seçmeli soru hazırla.
-    Cevabı SADECE şu JSON formatında ver (başka hiçbir metin ekleme):
-    [
-        {{
-            "soru": "Soru metni buraya...",
-            "secenekler": ["A) ...", "B) ...", "C) ...", "D) ..."],
-            "dogru_cevap": "A) ..."
-        }}
-    ]
-    Metin: {text[:5000]}
-    """
+    if not api_key: return []
+    url_model = f"https://generativelanguage.googleapis.com/v1beta/models?key={api_key}"
+    try:
+        r = requests.get(url_model, timeout=10)
+        if r.status_code == 200:
+            uygunlar = [m['name'] for m in r.json().get('models', []) if 'generateContent' in m.get('supportedGenerationMethods', [])]
+            if not uygunlar: return []
+            model = next((m for m in uygunlar if 'flash' in m), uygunlar[0]).replace("models/", "")
+        else: return []
+    except: return []
+
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+    prompt = f"""Sen uzman bir sınav hazırlayıcısın. Metni analiz et, 5 adet çoktan seçmeli soru hazırla.
+    Cevap formatı SADECE JSON olsun: [{{ "soru": "...", "secenekler": ["A)..."], "dogru_cevap": "A)..." }}]
+    Metin: {text[:6000]}"""
     
     try:
-        response = requests.post(url, headers=headers, json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=30)
-        if response.status_code == 200:
-            ham_metin = response.json()['candidates'][0]['content']['parts'][0]['text']
-            return json.loads(temizle_json(ham_metin))
-    except Exception as e:
-        st.error(f"Bir hata oluştu: {e}")
+        resp = requests.post(url, headers={'Content-Type': 'application/json'}, json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=45)
+        if resp.status_code == 200:
+            return json.loads(temizle_json(resp.json()['candidates'][0]['content']['parts'][0]['text']))
+    except: pass
     return []
 
-# --- ARAYÜZ ---
+# --- ARAYÜZ BAŞLIYOR ---
 
-# 1. Header (Logo ve Başlık)
+# Header
 col_logo, col_title = st.columns([1, 4])
-
 with col_logo:
-    # LOGO BURAYA EKLENDİ
-    try:
-        st.image("logo.png", width=120)
-    except:
-        st.markdown("# 📚") # Eğer logo dosyası yoksa emoji koyar
-
+    try: st.image("logo.png", width=110)
+    except: st.markdown("# 📚")
 with col_title:
     st.title("QuizApp")
-    st.caption("Yapay Zeka Destekli Soru Üretme Asistanı | GeoFurkan iyi çalışmalar diler.")
-
+    st.caption("GeoFurkan Eğitim Platformu")
 st.divider()
 
-# 2. Giriş Alanı
-with st.expander("⚙️ Kurulum ve Dosya Yükleme", expanded=True):
-    col_api, col_upload = st.columns(2)
-    
-    with col_api:
-        # Şifre kutusunu kaldırdık!
-        # Kod, anahtarı gizli kasadan (secrets) çekmeye çalışacak.
-        if "GOOGLE_API_KEY" in st.secrets:
-            api_key = st.secrets["GOOGLE_API_KEY"]
-            st.success("✅ Sistem Hazır (GeoFurkan Key Aktif)")
-        else:
-            # Eğer kasada anahtar bulamazsa (kendi bilgisayarında test ederken) elle girmeni ister
-            api_key = st.text_input("🔑 Google API Anahtarı", type="password")
-        
-        # YARDIM KUTUSU BURAYA EKLENDİ
-        with st.expander("❓ Anahtarı ücretsiz nasıl alırım?"):
-            st.markdown("""
-            1. **[Buraya tıklayarak Google AI Studio](https://aistudio.google.com/app/apikey)** sayfasına git.
-            2. **"Create API Key"** butonuna bas.
-            3. Oluşan kodu kopyala ve kutuya yapıştır.
-            *Tamamen ücretsizdir.*
-            """)
+# --- MENÜ ---
+st.sidebar.title("📌 Menü")
+secim = st.sidebar.radio("Seçim Yapınız:", ["📄 PDF ile Soru Üret", "📚 Hazır Soru Kütüphanesi"])
 
+# --- MOD 1: PDF ---
+if secim == "📄 PDF ile Soru Üret":
+    st.subheader("Yapay Zeka Soru Üretici")
+    st.info("Ders notunu (PDF) yükle, yapay zeka senin için test hazırlasın.")
+    
+    uploaded_file = st.file_uploader("Dosyayı buraya sürükle", type="pdf")
+    
+    if 'pdf_sorular' not in st.session_state: st.session_state['pdf_sorular'] = None
+
+    if uploaded_file and st.button("Soruları Oluştur 🚀", type="primary"):
         if not api_key:
-             st.info("👆 Devam etmek için lütfen API anahtarını gir.")
+             st.error("Sistem Hatası: API Anahtarı (Secrets) bulunamadı.")
+        else:
+            with st.spinner("Yapay zeka soruları hazırlıyor..."):
+                text = pdf_oku(uploaded_file)
+                st.session_state['pdf_sorular'] = sorulari_uret_otomatik(text, api_key)
+                st.rerun()
 
-    with col_upload:
-        uploaded_file = st.file_uploader("📄 PDF Ders Notunu Buraya Sürükle", type="pdf")
-        if uploaded_file:
-            st.success(f"✅ '{uploaded_file.name}' yüklendi!")
+    if st.session_state['pdf_sorular']:
+        with st.form("pdf_test"):
+            cevaplar = {}
+            for i, q in enumerate(st.session_state['pdf_sorular']):
+                st.markdown(f"**{i+1}. {q['soru']}**")
+                cevaplar[i] = st.radio("Cevap:", q['secenekler'], key=f"p_{i}", label_visibility="collapsed")
+                st.write("---")
+            
+            if st.form_submit_button("Testi Bitir"):
+                dogru = 0
+                st.write("### 📊 Sonuçlar")
+                for i, q in enumerate(st.session_state['pdf_sorular']):
+                    if cevaplar.get(i) == q['dogru_cevap']:
+                        dogru += 1
+                        st.success(f"**{i+1}.** Doğru ✅")
+                    else:
+                        st.error(f"**{i+1}.** Yanlış ❌ (Doğru: {q['dogru_cevap']})")
+                st.metric("Puan", int(dogru/len(st.session_state['pdf_sorular'])*100))
 
-# Session State
-if 'sorular' not in st.session_state: st.session_state['sorular'] = None
-
-# 3. Buton
-st.write("")
-if uploaded_file and api_key:
-    if st.button("🚀 Soruları Oluştur ve Testi Başlat", type="primary"):
-        with st.spinner("🧠 Yapay zeka metni okuyor ve soruları hazırlıyor... Biraz sabır."):
-            text = pdf_oku(uploaded_file)
-            st.session_state['sorular'] = sorulari_uret_otomatik(text, api_key)
-
-# 4. Test Alanı
-if st.session_state['sorular']:
-    st.divider()
-    st.subheader("📝 Test Zamanı")
-    
-    with st.form("quiz_form"):
-        soru_listesi = st.session_state['sorular']
-        kullanici_cevaplari = {}
+# --- MOD 2: Kütüphane ---
+elif secim == "📚 Hazır Soru Kütüphanesi":
+    st.subheader("Konu Tarama Testleri")
+    try:
+        dersler = list(soru_bankasi.kutuphane.keys())
+        secilen_ders = st.selectbox("Ders Seç:", dersler)
+        konular = list(soru_bankasi.kutuphane[secilen_ders].keys())
+        secilen_konu = st.selectbox("Konu Seç:", konular)
+        sorular = soru_bankasi.kutuphane[secilen_ders][secilen_konu]
         
-        for i, soru in enumerate(soru_listesi):
-            st.markdown(f"##### {i+1}. {soru['soru']}")
-            kullanici_cevaplari[i] = st.radio(
-                "Cevabınız:", 
-                soru['secenekler'], 
-                key=f"q_{i}",
-                label_visibility="collapsed"
-            )
-            st.write("---")
+        st.write(f"📝 **{secilen_konu}** testi başlıyor! ({len(sorular)} Soru)")
+        st.divider()
+        
+        with st.form("lib_test"):
+            lib_cevaplar = {}
+            for i, q in enumerate(sorular):
+                st.markdown(f"**{i+1}. {q['soru']}**")
+                lib_cevaplar[i] = st.radio("Cevap:", q['secenekler'], key=f"l_{i}", label_visibility="collapsed")
+                st.write("")
             
-        if st.form_submit_button("✅ Testi Bitir ve Sonuçları Gör"):
-            st.balloons()
-            dogru_sayisi = 0
-            st.write("### 📊 Sonuçlarınız")
-            for i, soru in enumerate(soru_listesi):
-                secilen = kullanici_cevaplari.get(i)
-                dogru = soru['dogru_cevap']
-                if secilen == dogru:
-                    dogru_sayisi += 1
-                    st.success(f"**Soru {i+1}:** Doğru! ({secilen})")
-                else:
-                    st.error(f"**Soru {i+1}:** Yanlış. (Sizin Cevabınız: {secilen} | Doğru Cevap: {dogru})")
-            
-            puan = int((dogru_sayisi / len(soru_listesi)) * 100)
-            st.metric(label="Toplam Puan", value=f"{puan} / 100")
+            if st.form_submit_button("Testi Bitir"):
+                dogru = 0
+                st.write("### 📊 Sonuçlar")
+                for i, q in enumerate(sorular):
+                    if lib_cevaplar.get(i) == q['dogru_cevap']:
+                        dogru += 1
+                        st.success(f"**{i+1}.** Doğru ✅")
+                    else:
+                        st.error(f"**{i+1}.** Yanlış ❌ (Doğru: {q['dogru_cevap']})")
+                
+                skor = int(dogru/len(sorular)*100)
+                st.metric("Toplam Puan", skor)
+                if skor >= 70: st.balloons()
+                
+    except Exception as e:
+        st.warning("Henüz soru kütüphanesi oluşturulmamış.")
+        # st.write(e)
 
-# 5. Footer
-st.markdown("""
-<div class="footer">
-   <b>GeoFurkan</b> | QuizApp
-</div>
-""", unsafe_allow_html=True)
+# Footer
+st.markdown('<div class="footer">Made with ❤️ by <b>GeoFurkan</b></div>', unsafe_allow_html=True)
