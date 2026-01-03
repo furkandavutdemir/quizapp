@@ -3,12 +3,12 @@ import PyPDF2
 import requests
 import json
 
-# --- SAYFA AYARLARI VE STİL (Tasarım buradan başlar) ---
+# --- SAYFA AYARLARI VE STİL ---
 st.set_page_config(
     page_title="QuizApp by GeoFurkan",
-    page_icon="📚",
+    page_icon="logo.png", # Tarayıcı sekmesinde de logo görünür
     layout="centered",
-    initial_sidebar_state="collapsed" # Kenar çubuğunu başlangıçta kapalı tut
+    initial_sidebar_state="collapsed"
 )
 
 # Özel CSS ile Alt Bilgi (Footer) Tasarımı
@@ -25,15 +25,16 @@ st.markdown("""
     padding: 10px;
     font-size: 14px;
     border-top: 1px solid #e0e0e0;
+    z-index: 100;
 }
 .stButton>button {
-    width: 100%; # Butonları tam genişlik yap
-    border-radius: 10px; # Kenarları yuvarlat
+    width: 100%;
+    border-radius: 10px;
 }
 </style>
 """, unsafe_allow_html=True)
 
-# --- FONKSİYONLAR (Burası uygulamanın beyni, dokunmuyoruz) ---
+# --- FONKSİYONLAR ---
 
 def pdf_oku(pdf_file):
     reader = PyPDF2.PdfReader(pdf_file)
@@ -47,7 +48,6 @@ def temizle_json(metin):
     return metin
 
 def en_uygun_modeli_bul(api_key):
-    """API anahtarının izin verdiği en hızlı modeli otomatik bulur."""
     url = f"https://generativelanguage.googleapis.com/v1beta/models?key={api_key}"
     try:
         response = requests.get(url, timeout=10)
@@ -55,7 +55,6 @@ def en_uygun_modeli_bul(api_key):
             modeller = response.json().get('models', [])
             uygunlar = [m['name'] for m in modeller if 'generateContent' in m.get('supportedGenerationMethods', [])]
             if not uygunlar: return None
-            # Flash modeli öncelikli, yoksa Pro, yoksa ilk bulduğunu al
             secilen = next((m for m in uygunlar if 'flash' in m), 
                            next((m for m in uygunlar if 'pro' in m), uygunlar[0]))
             return secilen.replace("models/", "")
@@ -78,8 +77,8 @@ def sorulari_uret_otomatik(text, api_key):
     [
         {{
             "soru": "Soru metni buraya...",
-            "secenekler": ["A) Seçenek 1", "B) Seçenek 2", "C) Seçenek 3", "D) Seçenek 4"],
-            "dogru_cevap": "A) Seçenek 1"
+            "secenekler": ["A) ...", "B) ...", "C) ...", "D) ..."],
+            "dogru_cevap": "A) ..."
         }}
     ]
     Metin: {text[:5000]}
@@ -94,29 +93,40 @@ def sorulari_uret_otomatik(text, api_key):
         st.error(f"Bir hata oluştu: {e}")
     return []
 
-# --- MODERN ARAYÜZ TASARIMI ---
+# --- ARAYÜZ ---
 
-# 1. Üst Kısım (Header): Logo ve Başlık
-col_logo, col_title = st.columns([1, 4]) # Ekranı 1'e 4 oranında ikiye böl
+# 1. Header (Logo ve Başlık)
+col_logo, col_title = st.columns([1, 4])
 
 with col_logo:
-    # --- LOGO AYARI ---
-    # Eğer 'logo.png' adında bir resmin varsa alttaki satırın başındaki # işaretini kaldır.
-    # st.image("logo.png", width=100) 
-    st.markdown("# 📚") # Logo yoksa bu emoji görünür
+    # LOGO BURAYA EKLENDİ
+    try:
+        st.image("logo.png", width=120)
+    except:
+        st.markdown("# 📚") # Eğer logo dosyası yoksa emoji koyar
 
 with col_title:
     st.title("QuizApp")
-    st.caption("Yapay Zeka Destekli Soru Üretme Asistanı.| GEOFURKAN iyi çalışmalar diler.")
+    st.caption("Yapay Zeka Destekli Soru Üretme Asistanı | GeoFurkan iyi çalışmalar diler.")
 
-st.divider() # İnce bir çizgi çek
+st.divider()
 
-# 2. Giriş Alanı (Daha derli toplu görünüm için Expander kullandık)
+# 2. Giriş Alanı
 with st.expander("⚙️ Kurulum ve Dosya Yükleme", expanded=True):
-    col_api, col_upload = st.columns(2) # İki sütun yan yana
+    col_api, col_upload = st.columns(2)
     
     with col_api:
-        api_key = st.text_input("🔑 Google API Anahtarı", type="password", help="aistudio.google.com adresinden alınan anahtar.")
+        api_key = st.text_input("🔑 Google API Anahtarı", type="password")
+        
+        # YARDIM KUTUSU BURAYA EKLENDİ
+        with st.expander("❓ Anahtarı ücretsiz nasıl alırım?"):
+            st.markdown("""
+            1. **[Buraya tıklayarak Google AI Studio](https://aistudio.google.com/app/apikey)** sayfasına git.
+            2. **"Create API Key"** butonuna bas.
+            3. Oluşan kodu kopyala ve kutuya yapıştır.
+            *Tamamen ücretsizdir.*
+            """)
+
         if not api_key:
              st.info("👆 Devam etmek için lütfen API anahtarını gir.")
 
@@ -125,19 +135,18 @@ with st.expander("⚙️ Kurulum ve Dosya Yükleme", expanded=True):
         if uploaded_file:
             st.success(f"✅ '{uploaded_file.name}' yüklendi!")
 
-# Session State (Verileri hafızada tutmak için)
+# Session State
 if 'sorular' not in st.session_state: st.session_state['sorular'] = None
 
-# 3. Soru Üretme Butonu
-st.write("") # Biraz boşluk
+# 3. Buton
+st.write("")
 if uploaded_file and api_key:
-    # primary tipi butonu renkli yapar
     if st.button("🚀 Soruları Oluştur ve Testi Başlat", type="primary"):
         with st.spinner("🧠 Yapay zeka metni okuyor ve soruları hazırlıyor... Biraz sabır."):
             text = pdf_oku(uploaded_file)
             st.session_state['sorular'] = sorulari_uret_otomatik(text, api_key)
 
-# 4. Test Alanı (Sorular varsa burası görünür)
+# 4. Test Alanı
 if st.session_state['sorular']:
     st.divider()
     st.subheader("📝 Test Zamanı")
@@ -147,17 +156,17 @@ if st.session_state['sorular']:
         kullanici_cevaplari = {}
         
         for i, soru in enumerate(soru_listesi):
-            st.markdown(f"##### {i+1}. {soru['soru']}") # Soruları biraz daha belirgin yap
+            st.markdown(f"##### {i+1}. {soru['soru']}")
             kullanici_cevaplari[i] = st.radio(
                 "Cevabınız:", 
                 soru['secenekler'], 
                 key=f"q_{i}",
-                label_visibility="collapsed" # "Cevabınız" yazısını gizle, daha temiz görünsün
+                label_visibility="collapsed"
             )
-            st.write("---") # Sorular arasına çizgi
+            st.write("---")
             
         if st.form_submit_button("✅ Testi Bitir ve Sonuçları Gör"):
-            st.balloons() # Başarı efekti (Balonlar uçar!)
+            st.balloons()
             dogru_sayisi = 0
             st.write("### 📊 Sonuçlarınız")
             for i, soru in enumerate(soru_listesi):
@@ -172,7 +181,7 @@ if st.session_state['sorular']:
             puan = int((dogru_sayisi / len(soru_listesi)) * 100)
             st.metric(label="Toplam Puan", value=f"{puan} / 100")
 
-# 5. GeoFurkan İmzası (Sabit Alt Bilgi - Footer)
+# 5. Footer
 st.markdown("""
 <div class="footer">
    <b>GeoFurkan</b> | QuizApp
